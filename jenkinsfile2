@@ -6,16 +6,16 @@ node {
      gitcommit = readFile('.git/commit-id').trim()
    }
    stage('test') {
-     def contenedortest = docker.image('node:4.6')
-     contenedortest.pull()
+     def contenedortest = docker.image('node:4.6')//Creamos un contenedor con la imagen 'node:4.6' para hacer las pruebas
+     contenedortest.pull() //Nos descargamos la imagen
      contenedortest.inside {
-       sh 'npm install --only=dev'
-       sh 'npm test'
+       sh 'npm install --only=dev' //instalamos lo que necesitamos dentro del contenedor
+       sh 'npm test' //Corremos los test
      }
    }                   
-   stage('Docker Build & Push') {
+   stage('Docker Build & Push') { //Esto ya lo explicamos en primer jenkinsfile de este proyecto
      docker.withRegistry('https://registry.hub.docker.com', 'docker-hub') {
-      def nuestraapp = docker.build("macloujulian/nodejsapp:${gitcommit}", ".")
+      def nuestraapp = docker.build("andresrmateo/nodejsapp:${gitcommit}", ".")
       nuestraapp.push()
      }
    }
