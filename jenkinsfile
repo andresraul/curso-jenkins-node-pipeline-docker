@@ -1,20 +1,23 @@
 node {
-   def gitcommit
+   def gitcommit //creamos esta variable que utilizaremos para dar al tap  del 
+                //repositorio donde guardaremos la imagen de docker el mismo nombre que el commit
    stage('Verificación SCM') {
-     checkout scm
-     sh "git rev-parse --short HEAD > .git/commit-id"                        
-     gitcommit = readFile('.git/commit-id').trim()
+     checkout scm //Iniciamos el SCM para que verifique en el repositorio los cambios que debe bajar
+     sh "git rev-parse --short HEAD > .git/commit-id" //Comando shell para gurardar el nombre abreviado del commit en el arhivo commit-id                   
+     gitcommit = readFile('.git/commit-id').trim() // tomamos el nombre del commit y lo metemos en la variable
    }
    stage('test') {
-     nodejs(nodeJSInstallationName: 'nodejs') {
-       sh 'npm install --only=dev'
+     nodejs(nodeJSInstallationName: 'nodejs14') {//Nombre de la instalacón de la versión de node que hemos instalado
+       sh 'npm install --only=dev' //Instalamos los paquetes de node (sólo los de desarrollo)
        sh 'npm test'
      }
    }
    stage('Docker Build & Push') {
-     docker.withRegistry('https://registry.hub.docker.com', 'docker-hub') {
-      def nuestraapp = docker.build("macloujulian/nodejsapp:${gitcommit}", ".")
-      nuestraapp.push()
+     docker.withRegistry('https://registry.hub.docker.com', 'docker-hub') {//Indicamos la dirección de registro de docker hub 
+                                                                          //y el nombre de las credenciales que hemos establecido para registrarnos
+      def nuestraapp = docker.build("andresrmateo/nodejsapp:${gitcommit}", ".") //creamos la imagen y la guardamos en la misma ruta y la asignamos
+                                                                                //a una variable
+      nuestraapp.push() //hacemos un push de la imagen al docker hub
      }
    }
 }
